@@ -46,7 +46,17 @@ app.layout = html.Div(children=[
                 min=0,
                 max=10000,
                 step=1000,
-                marks={0: '0', 100: '100'},                                                
+                marks={0: '0 kg',
+                        1000: '1000 kg',
+                        2000: '2000 kg',
+                        3000: '3000 kg',
+                        4000: '4000 kg',
+                        5000: '5000 kg',
+                        6000: '6000 kg',
+                        7000: '7000 kg',
+                        8000: '8000 kg',
+                        9000: '9000 kg',
+                        10000: '10000 kg'},                                                
                 value=[min_payload, max_payload]
         ),
         # TASK 4: Add a scatter chart to show the correlation between payload and launch success
@@ -60,7 +70,6 @@ app.layout = html.Div(children=[
 @app.callback(Output(component_id='success-pie-chart', component_property='figure'),
               Input(component_id='site-dropdown', component_property='value'))
 def get_pie_chart(entered_site):
-    filtered_df = spacex_df
     if entered_site == 'ALL':
         fig = px.pie(spacex_df, 
                 values='class', 
@@ -80,10 +89,13 @@ def get_pie_chart(entered_site):
               [Input(component_id='site-dropdown', component_property='value'),
               Input(component_id="payload-slider", component_property="value")] 
               )
-def get_scatter_chart(entered_site, payload_mass):
-    filtered_df = spacex_df
+def get_scatter_chart(entered_site, payload_slider):
     if entered_site == 'ALL':
-        fig = px.scatter(spacex_df, 
+        low, high = payload_slider
+        df  = spacex_df
+        payload_range = (df['Payload Mass (kg)'] > low) & (df['Payload Mass (kg)'] < high)
+        fig = px.scatter(
+                df[payload_range], 
                 x='Payload Mass (kg)',
                 y='class',
                 color='Booster Version Category',
@@ -91,7 +103,11 @@ def get_scatter_chart(entered_site, payload_mass):
         return fig
     else:
         # return the outcomes scatter char for a selected site
-        fig = px.scatter(spacex_df[spacex_df['Launch Site'] == entered_site], 
+        low, high = payload_slider
+        df  = spacex_df[spacex_df['Launch Site'] == entered_site]
+        payload_range = (df['Payload Mass (kg)'] > low) & (df['Payload Mass (kg)'] < high)
+        fig = px.scatter(
+                df[payload_range], 
                 x='Payload Mass (kg)',
                 y='class',
                 color='Booster Version Category',
